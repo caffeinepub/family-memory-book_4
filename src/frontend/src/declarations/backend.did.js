@@ -25,6 +25,7 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 export const Memory = IDL.Record({
   'id' : IDL.Text,
   'title' : IDL.Text,
@@ -80,11 +81,23 @@ export const idlService = IDL.Service({
   'addSampleMemories' : IDL.Func([], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'deleteMemory' : IDL.Func([IDL.Text], [], []),
-  'getAllUniqueTags' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+  'getAllUniqueTags' : IDL.Func([], [IDL.Vec(IDL.Text)], []),
+  'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getMemoryById' : IDL.Func([IDL.Text], [Memory], ['query']),
+  'getMemoryById' : IDL.Func([IDL.Text], [Memory], []),
+  'getUserProfile' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(UserProfile)],
+      ['query'],
+    ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'listAllMemories' : IDL.Func([], [IDL.Vec(Memory)], ['query']),
+  'listAllMemories' : IDL.Func([], [IDL.Vec(Memory)], []),
+  'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'updateMemory' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDL.Text), IDL.Text],
+      [],
+      [],
+    ),
 });
 
 export const idlInitArgs = [];
@@ -107,6 +120,7 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const UserProfile = IDL.Record({ 'name' : IDL.Text });
   const Memory = IDL.Record({
     'id' : IDL.Text,
     'title' : IDL.Text,
@@ -162,11 +176,23 @@ export const idlFactory = ({ IDL }) => {
     'addSampleMemories' : IDL.Func([], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'deleteMemory' : IDL.Func([IDL.Text], [], []),
-    'getAllUniqueTags' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+    'getAllUniqueTags' : IDL.Func([], [IDL.Vec(IDL.Text)], []),
+    'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getMemoryById' : IDL.Func([IDL.Text], [Memory], ['query']),
+    'getMemoryById' : IDL.Func([IDL.Text], [Memory], []),
+    'getUserProfile' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(UserProfile)],
+        ['query'],
+      ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'listAllMemories' : IDL.Func([], [IDL.Vec(Memory)], ['query']),
+    'listAllMemories' : IDL.Func([], [IDL.Vec(Memory)], []),
+    'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'updateMemory' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDL.Text), IDL.Text],
+        [],
+        [],
+      ),
   });
 };
 

@@ -180,7 +180,7 @@ export default function AddMemoryModal({
       }}
     >
       <DialogContent
-        className="bg-popover w-full sm:max-w-lg"
+        className="bg-popover w-full sm:max-w-lg max-h-[90vh] overflow-y-auto"
         data-ocid="memory.dialog"
       >
         <DialogHeader>
@@ -396,7 +396,7 @@ export default function AddMemoryModal({
             </p>
           </div>
 
-          <div className="flex gap-3 pt-1">
+          <div className="flex gap-3 pt-1 pb-1">
             <Button
               type="button"
               variant="outline"

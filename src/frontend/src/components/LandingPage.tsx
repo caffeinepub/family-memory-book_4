@@ -556,17 +556,7 @@ export default function LandingPage() {
           </div>
           <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-warm-gray">
             <span>
-              © {new Date().getFullYear()}. Built with{" "}
-              <Heart className="inline w-3 h-3 fill-current text-gold-dark" />{" "}
-              using{" "}
-              <a
-                href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-                className="underline hover:text-charcoal transition-colors"
-                target="_blank"
-                rel="noreferrer"
-              >
-                caffeine.ai
-              </a>
+              © {new Date().getFullYear()} Kinship. Made by Alishba Tanveer
             </span>
             <div className="flex gap-5">
               <span className="hover:text-charcoal transition-all duration-300 cursor-default">

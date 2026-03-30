@@ -22,6 +22,7 @@ export interface Memory {
   'authorName' : string,
   'description' : string,
 }
+export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -61,10 +62,17 @@ export interface _SERVICE {
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'deleteMemory' : ActorMethod<[string], undefined>,
   'getAllUniqueTags' : ActorMethod<[], Array<string>>,
+  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getMemoryById' : ActorMethod<[string], Memory>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'listAllMemories' : ActorMethod<[], Array<Memory>>,
+  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'updateMemory' : ActorMethod<
+    [string, string, string, string, Array<string>, string],
+    undefined
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

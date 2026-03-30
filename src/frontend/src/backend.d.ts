@@ -25,6 +25,9 @@ export interface Memory {
     authorName: string;
     description: string;
 }
+export interface UserProfile {
+    name: string;
+}
 export enum UserRole {
     admin = "admin",
     user = "user",
@@ -32,13 +35,16 @@ export enum UserRole {
 }
 export interface backendInterface {
     addMemory(title: string, description: string, date: string, tags: Array<string>, authorName: string, blobIds: Array<ExternalBlob>): Promise<string>;
-    updateMemory(memoryId: string, title: string, description: string, date: string, tags: Array<string>, authorName: string): Promise<void>;
     addSampleMemories(): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     deleteMemory(memoryId: string): Promise<void>;
     getAllUniqueTags(): Promise<Array<string>>;
+    getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getMemoryById(memoryId: string): Promise<Memory>;
+    getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     listAllMemories(): Promise<Array<Memory>>;
+    saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    updateMemory(memoryId: string, title: string, description: string, date: string, tags: Array<string>, authorName: string): Promise<void>;
 }

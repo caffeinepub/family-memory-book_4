@@ -4,26 +4,26 @@ import { ExternalBlob } from "../backend";
 import { useActor } from "./useActor";
 
 export function useListMemories() {
-  const { actor, isFetching } = useActor();
+  const { actor } = useActor();
   return useQuery<Memory[]>({
     queryKey: ["memories"],
     queryFn: async () => {
       if (!actor) return [];
       return actor.listAllMemories();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor,
   });
 }
 
 export function useListTags() {
-  const { actor, isFetching } = useActor();
+  const { actor } = useActor();
   return useQuery<string[]>({
     queryKey: ["tags"],
     queryFn: async () => {
       if (!actor) return [];
       return actor.getAllUniqueTags();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor,
   });
 }
 
@@ -55,8 +55,8 @@ export function useAddMemory() {
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["memories"] });
-      queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.refetchQueries({ queryKey: ["memories"] });
+      queryClient.refetchQueries({ queryKey: ["tags"] });
     },
   });
 }
@@ -74,20 +74,18 @@ export function useEditMemory() {
       authorName: string;
     }) => {
       if (!actor) throw new Error("Not connected");
-      // updateMemory is present in the backend but not yet reflected in the generated type;
-      // cast to any to call it safely at runtime.
-      return (actor as any).updateMemory(
+      return actor.updateMemory(
         data.memoryId,
         data.title,
         data.description,
         data.date,
         data.tags,
         data.authorName,
-      ) as Promise<void>;
+      );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["memories"] });
-      queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.refetchQueries({ queryKey: ["memories"] });
+      queryClient.refetchQueries({ queryKey: ["tags"] });
     },
   });
 }
@@ -101,8 +99,8 @@ export function useDeleteMemory() {
       return actor.deleteMemory(memoryId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["memories"] });
-      queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.refetchQueries({ queryKey: ["memories"] });
+      queryClient.refetchQueries({ queryKey: ["tags"] });
     },
   });
 }

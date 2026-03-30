@@ -1,17 +1,18 @@
 import Map "mo:core/Map";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
-import Iter "mo:core/Iter";
 import Nat "mo:core/Nat";
+import Int "mo:core/Int";
 import List "mo:core/List";
-import Array "mo:core/Array";
 import Principal "mo:core/Principal";
-import Runtime "mo:core/Runtime";
+
 import Order "mo:core/Order";
+import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
-import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
+import Runtime "mo:core/Runtime";
+
 
 actor {
   include MixinStorage();
@@ -31,35 +32,58 @@ actor {
     createdAt : Int;
   };
 
-  module Memory {
-    public func compare(mem1 : Memory, mem2 : Memory) : Order.Order {
-      Text.compare(mem1.id, mem2.id);
-    };
+  public type UserProfile = {
+    name : Text;
+  };
 
+  module Memory {
     public func compareByCreatedAtDesc(mem1 : Memory, mem2 : Memory) : Order.Order {
       Int.compare(mem2.createdAt, mem1.createdAt);
     };
-
-    public func compareById(mem1 : Memory, mem2 : Memory) : Order.Order {
-      Text.compare(mem1.id, mem2.id);
-    };
   };
 
-  module Principal {
-    public func compare(p1 : Principal, p2 : Principal) : Order.Order {
-      Text.compare(p1.toText(), p2.toText());
-    };
-  };
-
-  // Maps and State
-  let memories = Map.empty<Nat, Memory>();
+  // Persistent state
+  var memories = Map.empty<Nat, Memory>();
   var nextMemoryId = 1;
+  var userProfiles = Map.empty<Principal, UserProfile>();
+
+  // Auto-enroll any authenticated (non-anonymous) caller as a user
+  func ensureUserRole(caller : Principal) {
+    if (caller.isAnonymous()) return;
+    switch (accessControlState.userRoles.get(caller)) {
+      case (null) { accessControlState.userRoles.add(caller, #user) };
+      case (?_) {};
+    };
+  };
+
+  // User Profile Functions
+  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view profiles");
+    };
+    userProfiles.get(caller);
+  };
+
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only view your own profile");
+    };
+    userProfiles.get(user);
+  };
+
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can save profiles");
+    };
+    userProfiles.add(caller, profile);
+  };
 
   // Memory Manipulation Functions
   public shared ({ caller }) func addMemory(title : Text, description : Text, date : Text, tags : [Text], authorName : Text, blobIds : [Storage.ExternalBlob]) : async Text {
-    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
-      Runtime.trap("Unauthorized: Only users can add memories");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Please log in to add memories");
     };
+    ensureUserRole(caller);
     let memoryId = nextMemoryId.toText();
     let memory : Memory = {
       id = memoryId;
@@ -78,6 +102,10 @@ actor {
   };
 
   public shared ({ caller }) func updateMemory(memoryId : Text, title : Text, description : Text, date : Text, tags : [Text], authorName : Text) : async () {
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Please log in to edit memories");
+    };
+    ensureUserRole(caller);
     switch (Nat.fromText(memoryId)) {
       case (null) { Runtime.trap("Memory not found") };
       case (?natId) {
@@ -104,10 +132,11 @@ actor {
     };
   };
 
-  public query ({ caller }) func getMemoryById(memoryId : Text) : async Memory {
-    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
-      Runtime.trap("Unauthorized: Only users can view memories");
+  public shared ({ caller }) func getMemoryById(memoryId : Text) : async Memory {
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Please log in to view memories");
     };
+    ensureUserRole(caller);
     switch (Nat.fromText(memoryId)) {
       case (null) { Runtime.trap("Memory not found") };
       case (?natId) {
@@ -119,14 +148,19 @@ actor {
     };
   };
 
-  public query ({ caller }) func listAllMemories() : async [Memory] {
-    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
-      Runtime.trap("Unauthorized: Only users can view memories");
+  public shared ({ caller }) func listAllMemories() : async [Memory] {
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Please log in to view memories");
     };
+    ensureUserRole(caller);
     memories.values().toArray().sort(Memory.compareByCreatedAtDesc);
   };
 
   public shared ({ caller }) func deleteMemory(memoryId : Text) : async () {
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Please log in to delete memories");
+    };
+    ensureUserRole(caller);
     switch (Nat.fromText(memoryId)) {
       case (null) { Runtime.trap("Memory not found") };
       case (?natId) {
@@ -143,10 +177,11 @@ actor {
   };
 
   // Tag Management
-  public query ({ caller }) func getAllUniqueTags() : async [Text] {
-    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
-      Runtime.trap("Unauthorized: Only users can view tags");
+  public shared ({ caller }) func getAllUniqueTags() : async [Text] {
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Please log in to view tags");
     };
+    ensureUserRole(caller);
 
     let tagList = List.empty<Text>();
 

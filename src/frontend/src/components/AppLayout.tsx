@@ -300,18 +300,8 @@ export default function AppLayout() {
 
       {/* Footer */}
       <footer className="bg-cream-deep border-t border-border py-4 px-6 text-center">
-        <p className="text-xs text-warm-gray">
-          © {new Date().getFullYear()}. Built with{" "}
-          <Heart className="inline w-3 h-3 fill-current text-gold-dark" /> using{" "}
-          <a
-            href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-            className="underline hover:text-charcoal transition-colors"
-            target="_blank"
-            rel="noreferrer"
-          >
-            caffeine.ai
-          </a>
-        </p>
+        <p className="text-xs text-warm-gray">© {new Date().getFullYear()}</p>
+        <p className="text-xs text-warm-gray">Made by Alishba Tanveer</p>
       </footer>
 
       {/* Modals */}
